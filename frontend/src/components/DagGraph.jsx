@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -6,20 +6,105 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
+  Panel,
 } from '@xyflow/react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import '@xyflow/react/dist/style.css';
 
 const elk = new ELK();
 
+// 大数据时使用更快的布局配置
 const elkOptions = {
   'elk.algorithm': 'layered',
   'elk.direction': 'DOWN',
   'elk.spacing.nodeNode': '80',
   'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+  'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+  'elk.separateConnectedComponents': 'true',
 };
 
-async function getLayoutedElements(nodes, edges) {
+// 简化布局（不计算精确位置，按层级排列）
+async function getSimpleLayout(nodes, edges) {
+  // 找出每个节点的层级（基于入度和出度）
+  const inDegree = new Map();
+  const outDegree = new Map();
+
+  nodes.forEach(n => {
+    inDegree.set(n.id, 0);
+    outDegree.set(n.id, 0);
+  });
+
+  edges.forEach(e => {
+    outDegree.set(e.source, (outDegree.get(e.source) || 0) + 1);
+    inDegree.set(e.target, (inDegree.get(e.target) || 0) + 1);
+  });
+
+  // BFS 计算层级
+  const levels = new Map();
+  const queue = [];
+
+  // 从根节点（没有入边）开始
+  nodes.forEach(n => {
+    if (inDegree.get(n.id) === 0) {
+      levels.set(n.id, 0);
+      queue.push(n.id);
+    }
+  });
+
+  while (queue.length > 0) {
+    const nodeId = queue.shift();
+    const currentLevel = levels.get(nodeId);
+
+    edges.forEach(e => {
+      if (e.source === nodeId && !levels.has(e.target)) {
+        levels.set(e.target, currentLevel + 1);
+        queue.push(e.target);
+      }
+    });
+  }
+
+  // 未分配层级的节点（可能是环或孤立节点）
+  nodes.forEach(n => {
+    if (!levels.has(n.id)) {
+      levels.set(n.id, 0);
+    }
+  });
+
+  // 按层级分组
+  const levelGroups = new Map();
+  nodes.forEach(n => {
+    const level = levels.get(n.id) || 0;
+    if (!levelGroups.has(level)) {
+      levelGroups.set(level, []);
+    }
+    levelGroups.get(level).push(n.id);
+  });
+
+  // 计算位置
+  const NODE_WIDTH = 150;
+  const NODE_HEIGHT = 40;
+  const HORIZONTAL_GAP = 80;
+  const VERTICAL_GAP = 100;
+
+  const layoutedNodes = nodes.map((node) => {
+    const level = levels.get(node.id) || 0;
+    const siblings = levelGroups.get(level) || [];
+    const index = siblings.indexOf(node.id);
+
+    return {
+      ...node,
+      position: {
+        x: index * (NODE_WIDTH + HORIZONTAL_GAP),
+        y: level * (NODE_HEIGHT + VERTICAL_GAP),
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+}
+
+// ELK布局（带超时保护）
+async function getElkLayout(nodes, edges, timeout = 10000) {
   const graph = {
     id: 'root',
     layoutOptions: elkOptions,
@@ -35,20 +120,47 @@ async function getLayoutedElements(nodes, edges) {
     })),
   };
 
-  const layoutedGraph = await elk.layout(graph);
+  // 使用Promise.race实现超时
+  const layoutPromise = elk.layout(graph);
 
-  const layoutedNodes = layoutedGraph.children?.map((node) => {
-    const originalNode = nodes.find((n) => n.id === node.id);
-    return {
-      ...originalNode,
-      position: {
-        x: node.x - 75,
-        y: node.y - 20,
-      },
-    };
-  }) || [];
+  try {
+    const layoutedGraph = await Promise.race([
+      layoutPromise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('布局超时')), timeout)
+      ),
+    ]);
 
-  return { nodes: layoutedNodes, edges };
+    const layoutedNodes = layoutedGraph.children?.map((node) => {
+      const originalNode = nodes.find((n) => n.id === node.id);
+      return {
+        ...originalNode,
+        position: {
+          x: node.x - 75,
+          y: node.y - 20,
+        },
+      };
+    }) || [];
+
+    return { nodes: layoutedNodes, edges };
+  } catch (error) {
+    console.warn('ELK布局失败，使用简化布局:', error.message);
+    return getSimpleLayout(nodes, edges);
+  }
+}
+
+// 根据数据量选择布局方式
+async function getLayoutedElements(nodes, edges) {
+  const totalElements = nodes.length + edges.length;
+
+  // 大数据量使用简化布局
+  if (totalElements > 500) {
+    console.log(`大数据集 (${totalElements} 元素)，使用简化布局`);
+    return getSimpleLayout(nodes, edges);
+  }
+
+  // 小数据量使用ELK布局
+  return getElkLayout(nodes, edges);
 }
 
 export default function DagGraph({ data }) {
