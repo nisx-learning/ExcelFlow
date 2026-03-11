@@ -1,0 +1,174 @@
+# ########################
+# 前端通用忽略
+# ########################
+
+# 依赖目录
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# 打包输出目录
+dist/
+dist-ssr/
+build/
+*.local
+
+# 环境变量文件（注意：敏感信息不应提交）
+.env
+.env.local
+.env.*.local
+
+# 编辑器/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS 生成文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ########################
+# 后端通用忽略
+# ########################
+
+# Java / Kotlin / Gradle / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Gradle ###
+.gradle/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.hypothesis/
+.ruff_cache/
+
+# Go
+go.sum
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Node.js (后端 Node 项目)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json  # 通常 lock 文件应该提交，但某些项目策略会忽略，按需调整
+
+# Ruby on Rails
+/tmp
+/log/*.log
+*.pid
+*.sqlite3
+db/*.sqlite3
+db/*.sqlite3-journal
+public/system
+public/uploads
+
+# 其他常见
+*.log
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# ########################
+# 数据库相关（如有）
+# ########################
+*.sql
+*.dump
+*.sqlite
+
+# ########################
+# 密钥/证书/配置文件（切勿提交）
+# ########################
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+secrets.*
+config/application.yml
+config/database.yml
+
+# ########################
+# 容器相关
+# ########################
+.dockerignore
+Dockerfile
+docker-compose.yml
+# 如果你希望提交 Dockerfile 等，请去掉上面的注释
+
+# ########################
+# 自定义项目特定忽略
+# ########################
+# 例如：
+# /uploads
+# /public/assets
+# /storage
