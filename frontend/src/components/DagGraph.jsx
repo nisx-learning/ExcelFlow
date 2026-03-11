@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -7,58 +7,69 @@ import {
   useEdgesState,
   addEdge,
 } from '@xyflow/react';
-import dagre from 'dagre';
+import ELK from 'elkjs/lib/elk.bundled.js';
 import '@xyflow/react/dist/style.css';
 
-const nodeWidth = 150;
-const nodeHeight = 40;
+const elk = new ELK();
 
-function getLayoutedElements(nodes, edges) {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'TB' });
+const elkOptions = {
+  'elk.algorithm': 'layered',
+  'elk.direction': 'DOWN',
+  'elk.spacing.nodeNode': '80',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+};
 
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
+async function getLayoutedElements(nodes, edges) {
+  const graph = {
+    id: 'root',
+    layoutOptions: elkOptions,
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: 150,
+      height: 40,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
 
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
+  const layoutedGraph = await elk.layout(graph);
 
-  dagre.layout(dagreGraph);
-
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
+  const layoutedNodes = layoutedGraph.children?.map((node) => {
+    const originalNode = nodes.find((n) => n.id === node.id);
     return {
-      ...node,
+      ...originalNode,
       position: {
-        x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
+        x: node.x - 75,
+        y: node.y - 20,
       },
     };
-  });
+  }) || [];
 
   return { nodes: layoutedNodes, edges };
 }
 
 export default function DagGraph({ data }) {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    if (!data) return { nodes: [], edges: [] };
-    return getLayoutedElements(
-      data.nodes.map((n) => ({ id: n.id, data: { label: n.label || n.id } })),
-      data.edges.map((e) => ({ id: `${e.source}-${e.target}`, source: e.source, target: e.target, animated: true }))
-    );
+  const [layoutedData, setLayoutedData] = useState({ nodes: [], edges: [] });
+
+  useEffect(() => {
+    if (!data) return;
+
+    const nodes = data.nodes.map((n) => ({ id: n.id, data: { label: n.label || n.id } }));
+    const edges = data.edges.map((e) => ({ id: `${e.source}-${e.target}`, source: e.source, target: e.target, animated: true }));
+
+    getLayoutedElements(nodes, edges).then(setLayoutedData);
   }, [data]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedData.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedData.edges);
 
-  // 当data变化时更新节点和边
   useEffect(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+    setNodes(layoutedData.nodes);
+    setEdges(layoutedData.edges);
+  }, [layoutedData, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
