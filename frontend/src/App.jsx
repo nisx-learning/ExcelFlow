@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import DagGraph from './components/DagGraph';
 
 function App() {
@@ -14,21 +15,38 @@ function App() {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await fetch('/api/excel/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      if (!response.ok) {
-        throw new Error('上传失败');
+      const nodes = new Map();
+      const edges = [];
+
+      // 从第二行开始读取（A列=源节点，B列=目标节点）
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row[0] || !row[1]) continue;
+
+        const source = String(row[0]).trim();
+        const target = String(row[1]).trim();
+
+        if (!source || !target) continue;
+
+        nodes.set(source, { id: source, label: source });
+        nodes.set(target, { id: target, label: target });
+        edges.push({ source, target });
       }
 
-      const data = await response.json();
-      setGraphData(data);
+      if (nodes.size === 0) {
+        throw new Error('Excel文件中没有有效数据');
+      }
+
+      setGraphData({
+        nodes: Array.from(nodes.values()),
+        edges,
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -36,7 +54,6 @@ function App() {
     }
   };
 
-  // 支持重复上传
   const handleReUpload = () => {
     fileInputRef.current.value = '';
     setGraphData(null);
