@@ -8,6 +8,22 @@ function App() {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
+  // 测试数据
+  const testData = {
+    nodes: [
+      { id: 'A', label: '节点 A' },
+      { id: 'B', label: '节点 B' },
+      { id: 'C', label: '节点 C' },
+      { id: 'D', label: '节点 D' },
+    ],
+    edges: [
+      { source: 'A', target: 'B' },
+      { source: 'A', target: 'C' },
+      { source: 'B', target: 'D' },
+      { source: 'C', target: 'D' },
+    ],
+  };
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -53,6 +69,10 @@ function App() {
       // 每次都重置input，允许重复上传同一文件
       event.target.value = '';
     }
+  };
+
+  const handleTestData = () => {
+    setGraphData(testData);
   };
 
   return (
@@ -121,6 +141,30 @@ function App() {
                 style={{ display: 'none' }}
               />
             </label>
+
+            <button style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+              border: 'none',
+            }}
+            onClick={handleTestData}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+              </svg>
+              测试数据
+            </button>
+
             {loading && (
               <span style={{ color: '#667eea', fontSize: '14px' }}>
                 解析中...
