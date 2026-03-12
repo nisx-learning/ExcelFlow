@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm run:*)",
       "Bash(npm install:*)",
-      "Bash(curl -s \"http://localhost:5174\")"
+      "Bash(curl -s \"http://localhost:5174\")",
+      "Bash(taskkill /f /im node.exe)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(curl -s http://localhost:5173/)"
     ]
   }
 }

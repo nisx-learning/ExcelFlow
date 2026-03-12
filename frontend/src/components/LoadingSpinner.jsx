@@ -1,3 +1,4 @@
+import React from 'react';
 export default function LoadingSpinner({ message = '加载中...' }) {
   return (
     <div style={{

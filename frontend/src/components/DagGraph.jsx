@@ -1,5 +1,6 @@
+import React from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import G6 from '@antv/g6';
+import { Graph } from '@antv/g6';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function DagGraph({ data }) {
@@ -49,88 +50,29 @@ export default function DagGraph({ data }) {
       try {
         console.log('[DagGraph] creating graph');
 
-        const graph = new G6.Graph({
+        const graph = new Graph({
           container: containerRef.current,
           width: containerRef.current.clientWidth,
           height: containerRef.current.clientHeight,
-          modes: {
-            default: ['drag-canvas', 'zoom-canvas', 'drag-node'],
-          },
-          defaultNode: {
-            type: 'rect',
-            size: [150, 40],
-            style: {
-              fill: '#667eea',
-              stroke: '#5a67d8',
-              lineWidth: 2,
-              radius: 8,
-            },
-            labelCfg: {
-              style: {
-                fill: '#fff',
-                fontSize: 14,
-                fontWeight: 500,
-              },
-            },
-          },
-          defaultEdge: {
-            type: 'cubic-horizontal',
-            style: {
-              stroke: '#a855f7',
-              lineWidth: 2,
-              endArrow: {
-                path: G6.Arrow.triangle(8, 10, 0),
-                fill: '#a855f7',
-              },
-            },
-          },
+          behaviors: ['drag-canvas', 'zoom-canvas', 'drag-node'],
+          data:g6Data,
           layout: {
-            type: 'dagre',
+            type: 'antv-dagre',
             rankdir: 'TB',
             align: 'UL',
-            nodesep: 80,
+            nodesep: 50,
             ranksep: 100,
-          },
+            controlPoints: false,
+            },
         });
 
         graphRef.current = graph;
-        let layoutCompleted = false;
-
-        // 监听布局完成事件
-        graph.on('afterlayout', () => {
-          if (!layoutCompleted) {
-            layoutCompleted = true;
-            console.log('[DagGraph] afterlayout');
-            try {
-              graph.fitView(20);
-              console.log('[DagGraph] fitView completed');
-            } catch (e) {
-              console.error('[DagGraph] fitView error:', e);
-            }
-            setIsLoading(false);
-          }
-        });
-
-        // 备用方案：如果 afterlayout 没触发，3秒后自动执行
-        const backupTimer = setTimeout(() => {
-          if (!layoutCompleted) {
-            console.log('[DagGraph] using backup fitView');
-            try {
-              graph.fitView(20);
-            } catch (e) {
-              console.error('[DagGraph] backup fitView error:', e);
-            }
-            setIsLoading(false);
-          }
-        }, 3000);
-
-        graph.data(g6Data);
+        console.log('开始绘制');
         graph.render();
-
+        setIsLoading(false);
         console.log('[DagGraph] graph rendered');
 
         return () => {
-          clearTimeout(backupTimer);
           graph.destroy();
           graphRef.current = null;
         };

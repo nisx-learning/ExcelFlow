@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import DagGraph from './components/DagGraph';
@@ -52,12 +53,13 @@ function App() {
         nodes.set(source, { id: source, label: source });
         nodes.set(target, { id: target, label: target });
         edges.push({ source, target });
+        console.log(row);
       }
 
       if (nodes.size === 0) {
         throw new Error('Excel文件中没有有效数据');
       }
-
+      console.log('excel解析完成')
       setGraphData({
         nodes: Array.from(nodes.values()),
         edges,
