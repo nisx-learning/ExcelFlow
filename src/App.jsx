@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import DagGraph from './components/DagGraph';
+import { exportToDrawIO } from './utils/drawioExporter';
 
 function App() {
   const [graphData, setGraphData] = useState(null);
@@ -75,6 +76,19 @@ function App() {
 
   const handleTestData = () => {
     setGraphData(testData);
+  };
+
+  const handleExportDrawIO = async () => {
+    if (!graphData) {
+      alert('请先上传或加载数据');
+      return;
+    }
+
+    try {
+      await exportToDrawIO(graphData);
+    } catch (error) {
+      alert(`导出失败: ${error.message}`);
+    }
   };
 
   return (
@@ -165,6 +179,31 @@ function App() {
                 <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
               </svg>
               测试数据
+            </button>
+
+            <button style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#fff',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)',
+              border: 'none',
+            }}
+            onClick={handleExportDrawIO}
+            disabled={!graphData}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              导出Draw.io
             </button>
 
             {loading && (

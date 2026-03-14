@@ -55,15 +55,22 @@ export default function DagGraph({ data }) {
           width: containerRef.current.clientWidth,
           height: containerRef.current.clientHeight,
           behaviors: ['drag-canvas', 'zoom-canvas', 'drag-node'],
-          data:g6Data,
+          data: g6Data,
+          edge: {
+            type: 'polyline',
+            router: {
+              type: 'shortest-path',
+              enableObstacleAvoidance: true
+            },
+          },
           layout: {
             type: 'antv-dagre',
             rankdir: 'TB',
             align: 'UL',
             nodesep: 50,
-            ranksep: 100,
+            ranksep: 10,
             controlPoints: false,
-            },
+          },
         });
 
         graphRef.current = graph;
