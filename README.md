@@ -1,42 +1,42 @@
-# Excel DAG 可视化项目
+# Excel DAG 可视化 - Webpack 版本
+
+## 项目说明
+本项目已从 Vite 迁移到 Webpack 5，用于解析 Excel 文件并可视化有向无环图。
+
+## 可用命令
+
+| 命令 | 说明 |
+|------|------|
+| `npm install` | 安装项目依赖 |
+| `npm run dev` | 启动开发服务器 (端口 5173) |
+| `npm run build` | 生产环境构建 |
+| `npm run build:dev` | 开发环境构建 |
+| `npm run clean` | 清理 dist 目录 |
+
+## 主要改动
+
+1. **构建工具**: Vite → Webpack 5
+2. **编译工具**: Babel 7 (支持 React 18)
+3. **保持功能**:
+   - 原有的开发服务器端口 (5173)
+   - API 代理配置
+   - React 18 + Antv G6 + XLSX
+4. **新增**:
+   - 代码分割优化
+   - 生产环境压缩
 
 ## 项目结构
+
 ```
-project/
-├── backend/          # Spring Boot后端 (端口 8080)
-└── frontend/         # React前端 (端口 5173)
+frontend/
+├── src/
+│   ├── main.jsx          # 应用入口
+│   ├── App.jsx           # 主应用组件
+│   └── components/
+│       ├── DagGraph.jsx  # 图表组件
+│       └── LoadingSpinner.jsx
+├── index.html            # HTML 模板
+├── webpack.config.js     # Webpack 配置
+├── babel.config.js       # Babel 配置
+└── package.json
 ```
-
-## 快速开始
-
-### 1. 启动后端
-```bash
-cd backend
-./gradlew bootRun
-```
-
-### 2. 启动前端
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 3. 访问
-打开浏览器访问 http://localhost:5173
-
-## Excel格式
-| A列(源节点) | B列(目标节点) |
-|------------|--------------|
-| A          | B            |
-| A          | C            |
-| B          | D            |
-| C          | D            |
-
-上传Excel文件后，系统会自动解析节点和边关系，并使用Dagre算法进行自动布局渲染DAG。
-
-## 验证
-1. 后端启动成功后会监听8080端口
-2. 前端启动后会监听5173端口
-3. 访问页面，点击上传按钮，选择Excel文件
-4. 验证DAG图是否正确渲染

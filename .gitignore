@@ -39,14 +39,14 @@ desktop.ini
 # Java / Kotlin / Gradle / Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+!src/main/**/target/
+!src/test/**/target/
 
 ### Gradle ###
 .gradle/
 **/build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+!src/main/**/build/
+!src/test/**/build/
 
 ### IntelliJ IDEA ###
 .idea/
@@ -54,8 +54,8 @@ target/
 *.iml
 *.ipr
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+!src/main/**/out/
+!src/test/**/out/
 
 ### Eclipse ###
 .classpath
@@ -172,3 +172,6 @@ docker-compose.yml
 # /uploads
 # /public/assets
 # /storage
+
+#Claude Code相关s
+.claude/
