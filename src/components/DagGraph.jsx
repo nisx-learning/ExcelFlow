@@ -57,6 +57,13 @@ export default function DagGraph({ data }) {
           behaviors: ['drag-canvas', 'zoom-canvas', 'drag-node'],
           data: g6Data,
           edge: {
+            style: {
+              stroke: '#1890FF',
+              lineWidth: 2,
+              endArrow: true, // 结束端箭头
+              endArrowType: 'vee', // 箭头类型
+              endArrowSize: 10, // 箭头大小
+            },
             type: 'polyline',
             router: {
               type: 'shortest-path',
@@ -67,7 +74,7 @@ export default function DagGraph({ data }) {
             type: 'antv-dagre',
             rankdir: 'TB',
             align: 'UL',
-            nodesep: 50,
+            nodesep: 10,
             ranksep: 10,
             controlPoints: false,
           },

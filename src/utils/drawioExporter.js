@@ -49,13 +49,19 @@ function convertToELKFormat(graphData) {
   return {
     id: 'root',
     layoutOptions: {
-      'elk.algorithm': 'mrtree',
+      'elk.algorithm': 'layered',
       'elk.direction': 'DOWN',
-      'elk.layered.spacing.nodeNode': '80',
-      'elk.layered.spacing.edgeNode': '30',
-      'elk.layered.spacing.edgeEdge': '20',
-      'elk.spacing.nodeNode': '80',
+      // 1. 强制开启正交路由（避障的前提）
+      'elk.edgeRouting': 'ORTHOGONAL',
+      // 2. 设置边与节点之间的最小距离，值越大，绕行越明显
       'elk.spacing.edgeNode': '30',
+      // 3. 设置边与边之间的距离，防止多条线重叠在一起
+      'elk.spacing.edgeEdge': '15',
+      // 4. 优化连线，使其尽量直线，只在必要时绕路
+      'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
+      // 5. 增大层级间距，给“绕路”留出足够的水平空间
+      'elk.layered.spacing.edgeNodeOnLayer': '20',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '80'
     },
     children: elkNodes,
     edges: elkEdges,
