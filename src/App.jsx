@@ -44,17 +44,30 @@ function App() {
 
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
-        if (!row[0] || !row[1]) continue;
+        if (!row[0]) continue;
 
-        const source = String(row[0]).trim();
-        const target = String(row[1]).trim();
+        const target = String(row[0]).trim();
+        if (!target) continue;
 
-        if (!source || !target) continue;
-
-        nodes.set(source, { id: source, label: source });
+        // 添加目标节点（无论是否有源节点）
         nodes.set(target, { id: target, label: target });
-        edges.push({ source, target });
-        console.log(row);
+
+        // 处理源节点（如果有）
+        if (row[1]) {
+          const sourcesStr = String(row[1]).trim();
+          if (sourcesStr) {
+            // 将源节点字符串按逗号分割
+            const sources = sourcesStr.split(/[,，]/).map(s => s.trim()).filter(s => s);
+
+            // 处理每个源节点
+            for (const source of sources) {
+              if (!source) continue;
+
+              nodes.set(source, { id: source, label: source });
+              edges.push({ source, target });
+            }
+          }
+        }
       }
 
       if (nodes.size === 0) {
@@ -116,7 +129,7 @@ function App() {
             Excel DAG 可视化
           </h1>
           <p style={{ margin: '10px 0 0 0', opacity: 0.9, fontSize: '14px' }}>
-            上传Excel文件，自动生成有向无环图
+            上传Excel文件，自动生成有向无环图。格式：第1列=目的节点，第2列=源节点（可选，多个用逗号分隔）
           </p>
         </div>
 
